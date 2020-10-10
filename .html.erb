@@ -1,0 +1,37 @@
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  </head>
+  <body>
+    <h2>課題：自家消費以外の譲渡先のゴーヤ情報　＆　品質の悪いゴーヤ情報の表示</h2>
+    <% require 'pg' %>
+    <% connection = PG::connect(dbname: "goya") %>
+    <% connection.internal_encoding = "UTF-8" %>
+    <% result1 = connection.exec("select count(*), round(avg(weight)), give_for from crops where give_for != '自家消費' group by give_for order by count desc;") %>
+    <% data1 = [] %>
+    <% result1.each do |rec1| %>
+    <% data1 << "ゴーヤの個数：#{rec1["count"]}　平均重量(グラム)：#{rec1["round"]} 譲渡先：#{rec1["give_for"]}" %>
+    <% end %>
+  
+    <% require 'pg' %>
+    <% connection = PG::connect(dbname: "goya") %>
+    <% connection.internal_encoding = "UTF-8" %>
+    <% result2 = connection.exec("select count(*), sum(weight), give_for from crops where quality = false group by give_for;") %>
+    <% data2 = [] %>
+    <% result2.each do |rec2| %>
+    <% data2 << "ゴーヤの個数：#{rec2["count"]}　総重量（グラム）：#{rec2["sum"]} 譲渡先：#{rec2["give_for"]}" %>
+    <% end %>
+
+    <form action="goya1.cgi" method="POST">
+       下記のボタン"1"を押すと、「自家消費」以外のゴーヤ情報ページに飛びます<br><br>
+      <input type="text" name="goya1" value="<%= data1.join(' ') %>">
+      <input type="submit" name="送信" value ="ボタン1" >
+    </form>
+    <br>
+    <form action="goya2.cgi" method="POST">
+       下記のボタン"2"を押すと、「品質が悪い」ゴーヤ情報ページに飛びます<br><br>
+      <input type="text" name="goya2" value="<%= data2.join(' ') %>">
+      <input type="submit" name="送信" value ="ボタン2" >
+    　　</form>
+  </body>
+</html>
